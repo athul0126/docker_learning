@@ -1,0 +1,42 @@
+services:
+  backend: 
+    build: ./backend
+    ports:
+      - "5000:5000"
+    networks:
+      - task-app
+    volumes:
+      - ./backend:/app
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongodb-container:27017/taskmanager
+    depends_on: # ensure that mongo will start before backend
+      - mongodb-container
+
+  frontend: # avoid ports in prod
+    build: ./frontend
+    ports:            
+      - "3000:3000"
+    networks:
+      - task-app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - HOST=0.0.0.0
+    depends_on:
+      - backend
+  
+  mongodb-container:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo/data:/data/db
+    networks:
+      - task-app
+  
+networks:
+  task-app:
+
